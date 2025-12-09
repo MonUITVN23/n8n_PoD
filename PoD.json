@@ -1,0 +1,1922 @@
+{
+  "name": "PoD",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -4928,
+        -1952
+      ],
+      "id": "5671976c-b8fe-4d22-894f-900a7f5c77db",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "resource": "product",
+        "operation": "create",
+        "name": "={{ $json.ten_san_pham }}",
+        "additionalFields": {
+          "description": "={{ $json.main_description_html }}\n\n<br><hr><br>\n<div style=\"text-align: center;\">\n  <p><strong>Official Authentic Product</strong></p>\n  <a href=\"https://hoopswaghouse.com/\" target=\"_blank\" rel=\"nofollow\">\n     <img src=\"https://hoopswaghouse.com/wp-content/uploads/2025/12/HoopSwagHouse_logo.png\" width=\"200\" alt=\"HoopSwagHouse\">\n  </a>\n</div>",
+          "regularPrice": "={{ $json.gia_goc }}",
+          "salePrice": "={{ $json.gia_sale }}",
+          "shortDescription": "={{ $json.short_description }}",
+          "slug": "={{ $json.slug }}"
+        },
+        "dimensionsUi": {},
+        "imagesUi": {
+          "imagesValues": [
+            {
+              "alt": "={{ $json.woo_images[0].alt }}",
+              "src": "={{ $json.woo_images[0].src }}",
+              "name": ""
+            },
+            {
+              "alt": "={{ $json.woo_images[1].alt }}",
+              "src": "={{ $json.woo_images[1].src }}",
+              "name": ""
+            },
+            {
+              "alt": "={{ $json.woo_images[2].alt }}",
+              "src": "={{ $json.woo_images[2].src }}",
+              "name": ""
+            }
+          ]
+        },
+        "metadataUi": {
+          "metadataValues": [
+            {
+              "key": "rank_math_focus_keyword",
+              "value": "={{ $json.tu_khoa_seo }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.wooCommerce",
+      "typeVersion": 1,
+      "position": [
+        -3488,
+        -2592
+      ],
+      "id": "24ca0b90-3cff-468d-b261-8725d6cefef6",
+      "name": "Hoop",
+      "credentials": {
+        "wooCommerceApi": {
+          "id": "Ip4IJydFOznVQufe",
+          "name": "Hoop Credetials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://hoopswaghouse.com//wp-json/wc/v3/products/categories",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "wooCommerceApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "per_page",
+              "value": "100"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -2992,
+        -2064
+      ],
+      "id": "4dbd5466-c531-4fce-af6f-55761b453b4f",
+      "name": "Lọc Categories cho Hoop",
+      "credentials": {
+        "wooCommerceApi": {
+          "id": "Ip4IJydFOznVQufe",
+          "name": "Hoop Credetials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- CẤU HÌNH ---\n// Kiểm tra xem dữ liệu đầu vào có đúng là mảng không, nếu không thì đưa vào mảng\nconst inputItems = Array.isArray(items) ? items : [items];\n\n// 1. Lọc và lấy các trường cần thiết (ID và Name)\nconst categories = inputItems.map(item => {\n  // Đôi khi dữ liệu nằm sâu trong json.body hoặc json, tùy API\n  const data = item.json; \n  return {\n    id: data.id,\n    name: data.name\n    // count: data.count // Bỏ comment nếu muốn lấy thêm số lượng sản phẩm\n  };\n}).filter(c => c.id && c.name); // Loại bỏ các dòng lỗi không có ID hoặc Name\n\n// 2. Tạo chuỗi văn bản danh sách để đưa vào Prompt AI\n// Kết quả sẽ giống: \"[12] Áo Thun | [15] Quần Jeans | ...\"\nconst categoriesContext = categories\n  .map(c => `[${c.id}] ${c.name}`)\n  .join(\" | \"); \n\n// 3. Trả về kết quả duy nhất (1 item) chứa danh sách này\nreturn [\n  {\n    json: {\n      total_cats: categories.length,\n      cat_list_text: categoriesContext, // Dùng biến này cho AI\n      cat_raw_data: categories // Giữ lại data gốc để debug nếu cần\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2992,
+        -1840
+      ],
+      "id": "91ce0426-a13f-4af0-8a77-3fe7976ad062",
+      "name": "Gom Categories"
+    },
+    {
+      "parameters": {
+        "url": "https://hoopswaghouse.com/wp-json/wc/v3/products/tags",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "wooCommerceApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "per_page",
+              "value": "100"
+            }
+          ]
+        },
+        "options": {
+          "pagination": {
+            "pagination": {
+              "parameters": {
+                "parameters": [
+                  {
+                    "name": "page",
+                    "value": "={{ $pageCount + 1 }}"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -2768,
+        -2064
+      ],
+      "id": "561b1d81-f41f-453d-8a8b-97c06b8809bb",
+      "name": "Lọc Tags cho Hoop",
+      "credentials": {
+        "wooCommerceApi": {
+          "id": "Ip4IJydFOznVQufe",
+          "name": "Hoop Credetials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- CẤU HÌNH ---\nconst inputItems = Array.isArray(items) ? items : [items];\n\n// 1. Xử lý Tags (Tương tự Categories)\nconst tags = inputItems.map(item => {\n  const data = item.json;\n  return {\n    id: data.id,\n    name: data.name\n  };\n}).filter(t => t.id && t.name);\n\n// 2. Tạo chuỗi văn bản Tags\n// Tags thường nhiều, nên dùng dấu xuống dòng \\n để rõ ràng hơn\nconst tagsContext = tags\n  .map(t => `[${t.id}] ${t.name}`)\n  .join(\", \"); \n\n// 3. Lấy lại dữ liệu Categories từ node trước đó (Gom Categories)\n// Giả sử node trước tên là \"Gom Categories\"\n// Lưu ý: Nếu n8n báo lỗi không tìm thấy, hãy đảm bảo node này nối dây từ nhánh chứa Gom Categories\nlet catContext = \"\";\ntry {\n    // Thử lấy từ context của node cha nếu dòng chảy liền mạch\n    // Hoặc bạn có thể dùng $(\"Gom Categories\").first().json.cat_list_text nếu không nối dây trực tiếp\n    // Ở đây tôi giả định bạn dùng biến toàn cục hoặc tham chiếu node:\n    const previousNodeData = $(\"Gom Categories\").first(); \n    catContext = previousNodeData ? previousNodeData.json.cat_list_text : \"Không tìm thấy data Categories\";\n} catch (error) {\n    catContext = \"Lỗi lấy data Categories (Kiểm tra lại tên node)\";\n}\n\n// 4. Trả về 1 cục dữ liệu chứa TẤT CẢ (Context tổng)\nreturn [\n  {\n    json: {\n      // Dữ liệu Tags mới xử lý\n      total_tags: tags.length,\n      tag_list_text: tagsContext,\n      \n      // Dữ liệu Categories được bảo lưu\n      cat_list_text: catContext,\n\n      // Tạo một lời nhắc mẫu cho AI luôn để tiện dùng\n      ai_system_prompt_part: `Danh sách Categories (Format: [ID] Tên): ${catContext}\\n\\nDanh sách Tags (Format: [ID] Tên): ${tagsContext}`\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2768,
+        -1840
+      ],
+      "id": "0a23f138-a8e7-4c1e-a9e1-22824509efc8",
+      "name": "Gom Tags"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://leaguelockergear.com/wp-json/wp/v2/media",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "wordpressApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Disposition",
+              "value": "=attachment; filename={{ $binary.data.fileName }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "={{ $binary.data.mimeType }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -4032,
+        -1648
+      ],
+      "id": "a2f6377e-57c6-492c-bda3-e08339c5d916",
+      "name": "HTTP Request",
+      "credentials": {
+        "wordpressApi": {
+          "id": "ZGGfckD1rZUtyuNQ",
+          "name": "Wordpress account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Lấy tất cả các items đầu ra từ node WordPress (chạy 3 lần)\n// Thay \"WordPress\" bằng tên chính xác của node upload của bạn\nconst allItems = $items(\"HTTP Request\"); \n\n// Trích xuất link ảnh từ kết quả\nconst urls = allItems.map(item => item.json.source_url);\n\n// Trả về 1 item duy nhất chứa cả 3 link đã được phân loại\nreturn [{\n    json: {\n        anh_3: urls[0] || \"\", // Link ảnh đầu tiên\n        anh_2: urls[1] || \"\", // Link ảnh thứ hai\n        anh_1: urls[2] || \"\"  // Link ảnh thứ ba\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3856,
+        -1648
+      ],
+      "id": "958d16b4-2e98-4b07-80a9-1cb9d4a7ad33",
+      "name": "Code in JavaScript8"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "searchMethod": "query",
+        "queryString": "='1FsV7AhUQJGqcawPq4w2fROVN_UVNTkdX' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
+        "filter": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -5264,
+        -1568
+      ],
+      "id": "b6b2b83c-5802-454e-ab95-47642477a7d0",
+      "name": "Search (LEAGUE)",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "rUlF8VcqJqVjB4ff",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "searchMethod": "query",
+        "queryString": "='1UTQWli6MEY-pYNZVFjKENSPVVDsWLlqP' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
+        "filter": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -5232,
+        -2272
+      ],
+      "id": "995f89bf-0391-4068-ac4c-886ee01f8854",
+      "name": "Search (HOOP)",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "rUlF8VcqJqVjB4ff",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hoopswaghouse.com/wp-json/wp/v2/media",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "wordpressApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Disposition",
+              "value": "=attachment; filename={{ $binary.data.fileName }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "={{ $binary.data.mimeType }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -4016,
+        -2336
+      ],
+      "id": "0ceb9335-34e2-41eb-ac00-98c21e6d00f7",
+      "name": "HTTP POST HOOP",
+      "credentials": {
+        "wordpressApi": {
+          "id": "wK2UB39hFBJwS9VA",
+          "name": "Wordpress account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Lấy tất cả các items đầu ra từ node WordPress (chạy 3 lần)\n// Thay \"WordPress\" bằng tên chính xác của node upload của bạn\nconst allItems = $items(\"HTTP POST HOOP\"); \n\n// Trích xuất link ảnh từ kết quả\nconst urls = allItems.map(item => item.json.source_url);\n\n// Trả về 1 item duy nhất chứa cả 3 link đã được phân loại\nreturn [{\n    json: {\n        anh_3: urls[0] || \"\", // Link ảnh đầu tiên\n        anh_2: urls[1] || \"\", // Link ảnh thứ hai\n        anh_1: urls[2] || \"\"  // Link ảnh thứ ba\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3840,
+        -2336
+      ],
+      "id": "7e834f47-ed60-46d6-a0cf-6fd6088d7bc6",
+      "name": "Code in JavaScript9"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -4464,
+        -2592
+      ],
+      "id": "c134692b-47d8-4335-a531-a4dfbeca9717",
+      "name": "Loop Over Items4"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Lấy nội dung text gốc từ Gemini\nconst rawText = items[0].json.content.parts[0].text;\n\ntry {\n  // 1. Tìm vị trí dấu ngoặc nhọn mở '{' đầu tiên và đóng '}' cuối cùng\n  const firstOpen = rawText.indexOf('{');\n  const lastClose = rawText.lastIndexOf('}');\n\n  if (firstOpen === -1 || lastClose === -1) {\n    throw new Error(\"Không tìm thấy dấu ngoặc JSON {} trong phản hồi của AI\");\n  }\n\n  // 2. Cắt lấy đúng đoạn JSON, bỏ qua lời dẫn chuyện thừa thãi\n  let cleanJson = rawText.substring(firstOpen, lastClose + 1);\n\n  // 3. (Mẹo nâng cao) Sửa lỗi dòng mới nếu AI lỡ xuống dòng trong chuỗi\n  // cleanJson = cleanJson.replace(/\\n/g, \"\\\\n\"); // Chỉ bật dòng này nếu vẫn lỗi\n\n  // 4. Parse JSON\n  const data = JSON.parse(cleanJson);\n\n  return [ { json: data } ];\n\n} catch (error) {\n  // Nếu lỗi, trả về nguyên văn text để Debug xem sai ở đâu\n  return [\n    {\n      json: {\n        error: error.message,\n        raw_content_to_debug: rawText // Xem cái này ở cột Output để biết AI viết sai chỗ nào\n      }\n    }\n  ];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3984,
+        -2528
+      ],
+      "id": "5d5b32c0-e0c5-49f0-b0fa-4af2944adcf0",
+      "name": "Code in JavaScript10"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -3824,
+        -2592
+      ],
+      "id": "16974bc2-0b0d-46e6-bce3-fa566c567c43",
+      "name": "Merge4"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst item = items[0].json;\n\n// Lấy nội dung bài viết từ AI\nlet content = item.main_description_html || \"\"; // Thêm || \"\" để tránh lỗi nếu null\n\n// Lấy link ảnh từ Sheet\nconst linkImg1 = item.anh_1; \nconst linkImg2 = item.anh_2;\nconst altText = item.ten_san_pham; \n\n// Tạo mã HTML cho ảnh\nconst htmlImg1 = `<figure style=\"text-align:center; margin: 25px 0;\">\n                    <img src=\"${linkImg1}\" alt=\"${altText} - Front View\" style=\"max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);\">\n                    <figcaption style=\"font-style: italic; color: #555; margin-top: 5px;\">${altText}</figcaption>\n                 </figure>`;\n\nconst htmlImg2 = `<figure style=\"text-align:center; margin: 25px 0;\">\n                    <img src=\"${linkImg2}\" alt=\"${altText} - Detail View\" style=\"max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);\">\n                 </figure>`;\n\n// THỰC HIỆN THAY THẾ\n// 1. Ảnh 1\nif (content.includes('[IMG_1]') && linkImg1) {\n    content = content.replace('[IMG_1]', htmlImg1);\n} else if (linkImg1) {\n    content = content.replace('</p>', '</p>' + htmlImg1);\n}\n\n// 2. Ảnh 2\nif (content.includes('[IMG_2]') && linkImg2) {\n    content = content.replace('[IMG_2]', htmlImg2);\n} else if (linkImg2) {\n    content += htmlImg2;\n}\n\n// Cập nhật lại nội dung\nitem.main_description_html = content;\n\n// TẠO GALLERY CHO WOOCOMMERCE\nconst images = [];\nfunction addImage(url) {\n  if (url && url.toString().startsWith('http')) {\n    images.push({ src: url.toString().trim(), alt: altText });\n  }\n}\naddImage(item.anh_1);\naddImage(item.anh_2);\naddImage(item.anh_3);\naddImage(item.anh_4);\n\n// ================================================================\n// PHẦN 3: TRẢ VỀ KẾT QUẢ TỔNG HỢP\n// ================================================================\n\nreturn [{\n  json: {\n    ...item,\n    woo_images: images\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3664,
+        -2592
+      ],
+      "id": "9e28d3c6-0bfe-4e1d-90b8-f505a41ed990",
+      "name": "Code in JavaScript11"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -5040,
+        -2272
+      ],
+      "id": "c1d25261-6cf4-4048-9ab8-3da8f5c97c22",
+      "name": "Loop Over Items5"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "searchMethod": "query",
+        "queryString": "='{{ $json.id }}' in parents and trashed = false",
+        "filter": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -4864,
+        -2256
+      ],
+      "id": "504829dc-df5f-45f7-8713-64c3789af611",
+      "name": "Search files and folders",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "rUlF8VcqJqVjB4ff",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -4464,
+        -2256
+      ],
+      "id": "fed97be6-19f5-4a62-b933-06c5aaadef55",
+      "name": "Download file1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "rUlF8VcqJqVjB4ff",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Tạo tiền tố ngày tháng (VD: 20251203)\nconst prefix = new Date().toISOString().slice(0, 10).replace(/-/g, \"\");\n\n// Duyệt qua TẤT CẢ các items (ảnh) trong danh sách\n// Dùng vòng lặp for...of để xử lý từng item một\nlet index = 1; // Biến đếm để đánh số thứ tự ảnh nếu cần\n\nfor (const item of items) {\n  // Kiểm tra xem item có dữ liệu binary (ảnh) không cho chắc ăn\n  if (item.binary && item.binary.data) {\n    \n    const oldName = item.binary.data.fileName;\n    \n    // Đổi tên: NgàyTháng_TênCũ\n    // Ví dụ: 20251203_anh-san-pham.jpg\n    item.binary.data.fileName = `${prefix}_${oldName}`;\n    \n    // MẸO: Nếu muốn chắc chắn không trùng, bạn có thể thêm số thứ tự vào:\n    // item.binary.data.fileName = `${prefix}_${index}_${oldName}`;\n    \n    index++;\n  }\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4192,
+        -2336
+      ],
+      "id": "45d96524-b83a-4f75-88e6-4c62d953d4d7",
+      "name": "Code in JavaScript12"
+    },
+    {
+      "parameters": {
+        "keep": "lastItems"
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -4192,
+        -2192
+      ],
+      "id": "eb634b17-c6dc-4e5b-8883-9bc58d9cad86",
+      "name": "Limit1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Lấy dữ liệu item đầu tiên\nconst item = items[0].json;\n\n// 1. TRÍCH XUẤT DỮ LIỆU CHÍNH XÁC (Dựa trên Debug của bạn)\n// Cấu trúc là: content -> parts[0] -> text\nlet rawText = \"\";\n\nif (item.content && item.content.parts && item.content.parts.length > 0) {\n    rawText = item.content.parts[0].text;\n} else {\n    // Dự phòng nếu cấu trúc thay đổi\n    rawText = item.text || item.output || \"\";\n}\n\n// 2. LÀM SẠCH CHUỖI (Xóa ký tự markdown ```json)\n// Vì rawText đang là chuỗi: \"```json\\n{...}\\n```\"\nconst cleanJson = rawText.replace(/```json|```/g, '').trim();\n\ntry {\n    // 3. CHUYỂN THÀNH OBJECT\n    const productInfo = JSON.parse(cleanJson);\n    \n    // 4. XỬ LÝ LOGIC SLUG (Theo yêu cầu < 92 ký tự)\n    let title = productInfo.ten_san_pham || \"Untitled Product\";\n    let slug = productInfo.slug || \"\";\n    \n    // Nếu AI quên slug, tự tạo từ từ khóa\n    if (!slug) {\n        const source = productInfo.tu_khoa_seo || title;\n        slug = source.toLowerCase().replace(/[^a-z0-9]+/g, '-');\n    }\n    \n    // Cắt slug cứng nếu dài hơn 91 ký tự\n    if (slug.length > 91) {\n        slug = slug.substring(0, 91);\n        slug = slug.replace(/-+$/, ''); // Xóa dấu gạch thừa ở đuôi\n    }\n    \n    return [{\n        json: {\n            ten_san_pham: title,\n            tu_khoa_seo: productInfo.tu_khoa_seo || \"pod product\",\n            slug: slug\n        }\n    }];\n\n} catch (error) {\n    // Nếu vẫn lỗi, in ra nguyên nhân để sửa\n    return [{\n        json: {\n            error: \"Lỗi Parse JSON\",\n            message: error.message,\n            raw_input_received: rawText\n        }\n    }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3840,
+        -2192
+      ],
+      "id": "bf08b064-a71a-402e-916e-7df717f5f530",
+      "name": "Code in JavaScript13"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -3664,
+        -2272
+      ],
+      "id": "9522b8fb-a197-477d-a398-8516d1e6cce7",
+      "name": "Merge5"
+    },
+    {
+      "parameters": {
+        "resource": "product",
+        "operation": "create",
+        "name": "={{ $json.ten_san_pham }}",
+        "additionalFields": {
+          "description": "={{ $json.main_description_html }}\n\n<br><hr><br>\n<div style=\"text-align: center;\">\n  <p><strong>Official Authentic Product</strong></p>\n  <a href=\"https://leaguelockergear.com/\" target=\"_blank\" rel=\"nofollow\">\n     <img src=\"https://leaguelockergear.com/wp-content/uploads/2025/10/cropped-logo-remove-small.png\" width=\"200\" alt=\"League Locker Gear\">\n  </a>\n</div>",
+          "shortDescription": "={{ $json.short_description }}",
+          "slug": "={{ $json.slug }}"
+        },
+        "dimensionsUi": {},
+        "imagesUi": {
+          "imagesValues": [
+            {
+              "alt": "={{ $json.woo_images[0].alt }}",
+              "src": "={{ $json.woo_images[0].src }}",
+              "name": ""
+            },
+            {
+              "alt": "={{ $json.woo_images[1].alt }}",
+              "src": "={{ $json.woo_images[1].src }}",
+              "name": ""
+            },
+            {
+              "alt": "={{ $json.woo_images[2].alt }}",
+              "src": "={{ $json.woo_images[2].src }}",
+              "name": ""
+            }
+          ]
+        },
+        "metadataUi": {
+          "metadataValues": [
+            {
+              "key": "rank_math_focus_keyword",
+              "value": "={{ $json.tu_khoa_seo }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.wooCommerce",
+      "typeVersion": 1,
+      "position": [
+        -3472,
+        -2816
+      ],
+      "id": "577090cf-c4e5-42f7-9f3e-c7674cdbcac3",
+      "name": "Create product (HOOP)",
+      "credentials": {
+        "wooCommerceApi": {
+          "id": "Ip4IJydFOznVQufe",
+          "name": "Hoop Credetials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1DedkgcgjD0YZuy7zRKxFShRsUrsGhhUk7GlDccVjVck",
+          "mode": "list",
+          "cachedResultName": "Pod",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DedkgcgjD0YZuy7zRKxFShRsUrsGhhUk7GlDccVjVck/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoop",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DedkgcgjD0YZuy7zRKxFShRsUrsGhhUk7GlDccVjVck/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "trang_thai",
+              "lookupValue": "Pending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -4672,
+        -2592
+      ],
+      "id": "b8389c1f-449f-4e44-b904-43ee0bab0930",
+      "name": "Sheet Hoop(Input)",
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6yUNJbZX45z2GUMs",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1DedkgcgjD0YZuy7zRKxFShRsUrsGhhUk7GlDccVjVck",
+          "mode": "list",
+          "cachedResultName": "Pod",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DedkgcgjD0YZuy7zRKxFShRsUrsGhhUk7GlDccVjVck/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoop",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DedkgcgjD0YZuy7zRKxFShRsUrsGhhUk7GlDccVjVck/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "trang_thai": "Pending",
+            "ten_san_pham": "={{ $json.ten_san_pham }}",
+            "anh_1": "={{ $json.anh_1 }}",
+            "anh_2": "={{ $json.anh_2 }}",
+            "anh_3": "={{ $json.anh_3 }}",
+            "tu_khoa_seo": "={{ $json.tu_khoa_seo }}",
+            "slug": "={{ $json.slug }}"
+          },
+          "matchingColumns": [
+            "slug"
+          ],
+          "schema": [
+            {
+              "id": "trang_thai",
+              "displayName": "trang_thai",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ten_san_pham",
+              "displayName": "ten_san_pham",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "anh_1",
+              "displayName": "anh_1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "anh_2",
+              "displayName": "anh_2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "anh_3",
+              "displayName": "anh_3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "gia_goc",
+              "displayName": "gia_goc",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "gia_sale",
+              "displayName": "gia_sale",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "tu_khoa_seo",
+              "displayName": "tu_khoa_seo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "slug",
+              "displayName": "slug",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tags",
+              "displayName": "tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "categories",
+              "displayName": "categories",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -3472,
+        -2224
+      ],
+      "id": "673e15cf-9ff1-4afe-8a00-125c5648cbad",
+      "name": "Sheet Hoop(Raw output, need improve)",
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6yUNJbZX45z2GUMs",
+          "name": "Sheet"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -4880,
+        -2448
+      ],
+      "id": "159b45fc-122f-41e9-a79e-0dd6409e03a0",
+      "name": "Limit2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Sắp xếp các item theo tên file giảm dần (3 -> 2 -> 1)\nitems.sort((a, b) => {\n  // Lấy tên file từ biến a và b.\n  // Hãy kiểm tra xem trường tên file của bạn là 'name' hay 'File Name'\n  // Thông thường output từ Google Drive List là 'name'\n  const nameA = a.json.name || a.json['File Name'] || '';\n  const nameB = b.json.name || b.json['File Name'] || '';\n\n  // Sử dụng localeCompare với tùy chọn numeric: true để so sánh số tự nhiên\n  // (ví dụ: để máy hiểu số 10 lớn hơn số 2, thay vì so sánh chuỗi thuần túy)\n  // b.localeCompare(a) sẽ trả về thứ tự GIẢM DẦN (Descending)\n  return nameB.localeCompare(nameA, undefined, { numeric: true, sensitivity: 'base' });\n});\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4656,
+        -2256
+      ],
+      "id": "3f625aee-eba6-4641-9cd2-2de81b1a304b",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "You are an expert in SEO and E-commerce (POD).\nAnalyze this product image and extract information in STRICT JSON format.\n\nRULES:\n1. All content must be in ENGLISH.\n2. First, identify the \"tu_khoa_seo\" (Main Keyword). It must be the core product name (3-6 words).\n3. \"ten_san_pham\" MUST follow this exact formula: \"{tu_khoa_seo} - {Descriptive Suffix}\".\n   - The Suffix describes features, material, or theme.\n4. \"slug\" MUST be the kebab-case version of the \"tu_khoa_seo\" (and optionally 1 short category word).\n5. \"slug\" MUST be LESS THAN 86 characters.\n6. Do NOT abbreviate sports team names. Always use the Full Official Name (City + Mascot). Example: Use \"Chicago Bulls\", never just \"Bulls\" or \"Chicago\".\n\nJSON Structure:\n{\n  \"ten_san_pham\": \"Main Keyword - Detailed Suffix\",\n  \"tu_khoa_seo\": \"Main Keyword\",\n  \"slug\": \"main-keyword-category\"\n}\n\nEXAMPLE INPUT (Logic to follow):\n- Image: A whiskey decanter shaped like a basketball player for Lakers fans.\n- OUTPUT JSON:\n{\n  \"ten_san_pham\": \"Los Angeles Lakers Whiskey Bottle - NBA 3D Dunking Player Tribute Decanter\",\n  \"tu_khoa_seo\": \"Los Angeles Lakers Whiskey Bottle\",\n  \"slug\": \"los-angeles-lakers-whiskey-bottle-nba\"\n}",
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -4016,
+        -2192
+      ],
+      "id": "8072a15c-dc38-49ab-b53a-292d8ac18742",
+      "name": "Phân tích ảnh",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZbPcQI2SHz0NvP4Y",
+          "name": "Gemini"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Bạn là một chuyên gia SEO Copywriter E-commerce (Native English Speaker).\nNhiệm vụ của bạn là viết nội dung sản phẩm chuyên sâu dựa trên thông tin sau:\n\nINPUT DATA:\n- Product Name: {{ $json.ten_san_pham }}\n- Focus Keyword: {{ $json.tu_khoa_seo }}\n\nYÊU CẦU NGHIÊM NGẶT VỀ NỘI DUNG (STRICT GUIDELINES):\n1. Ngôn ngữ: Tiếng Anh chuẩn (US English), văn phong bán hàng chuyên nghiệp, thuyết phục.\n2. Độ dài: BẮT BUỘC trên 500 từ (Không tính phần HTML tags).\n3. Định dạng: HTML chuẩn (sử dụng <h2>, <h3>, <p>, <ul>, <li>). Không dùng thẻ <h1>. Không dùng Markdown (```).\n4. Mật độ từ khóa: Duy trì \"Focus Keyword\" ở mức 1.2% - 1.5%. Phải xuất hiện tự nhiên ở đoạn mở đầu, ít nhất 1 thẻ H2, và rải rác trong bài.\n5. NO ICONS/EMOJIS: Tuyệt đối không sử dụng icon (🚀, 🌟,...) trong bài viết.\n6. Nội dung duy nhất: Tập trung sâu vào mô tả sản phẩm (chất liệu, cảm giác mặc, dịp sử dụng, hướng dẫn bảo quản). Không viết chung chung.\n\nYÊU CẦU VỀ BỐ CỤC HÌNH ẢNH:\nTrong phần nội dung chi tiết (main_description_html), bạn hãy chèn 2 ký hiệu giữ chỗ (placeholder) sau:\n1. \"[IMG_1]\" : Đặt ngay sau đoạn mở đầu (Introduction) hoặc sau thẻ H2 đầu tiên.\n2. \"[IMG_2]\" : Đặt ở gần cuối bài viết, trước phần kết luận hoặc FAQs.\n\nLưu ý: Chỉ viết đúng ký tự \"[IMG_1]\" và \"[IMG_2]\", không tự bịa ra thẻ hình ảnh html.\n\nYÊU CẦU VỀ TRÌNH BÀY & KHẢ NĂNG ĐỌC (READABILITY):\n1. QUY TẮC \"3 DÒNG\": Tuyệt đối KHÔNG viết đoạn văn dài lê thê (Wall of text). Mỗi đoạn văn (paragraph) chỉ được chứa tối đa 3 câu ngắn. Sau 2-3 câu bắt buộc phải đóng thẻ </p> và mở thẻ <p> mới.\n2. FORMATTING:\n   - Sử dụng danh sách liệt kê (<ul><li>) bất cứ khi nào có thể (thay vì viết câu liệt kê dài dòng).\n   - In đậm (<strong>) các từ khóa quan trọng hoặc lợi ích chính để làm điểm nhấn.\n3. TONE GIỌNG: Viết gãy gọn, súc tích, ngắt nghỉ rõ ràng để khách hàng lướt nhanh trên điện thoại vẫn nắm được ý.\n\nCẤU TRÚC BÀI VIẾT (HTML Output):\n- Phần 1: Introduction (Gây ấn tượng mạnh, chứa từ khóa).\n- Phần 2: Key Features (Dùng <ul>, mô tả chi tiết lợi ích).\n- Phần 3: Why You Need This (Đánh vào cảm xúc, nhu cầu quà tặng/lễ hội).\n- Phần 4: Material & Care Instructions (Chi tiết kỹ thuật).\n- Phần 5: FAQs (Phần này rất quan trọng - xem yêu cầu bên dưới).\n\nYÊU CẦU VỀ FAQs (5 Câu hỏi):\n- Viết đúng 5 câu hỏi và câu trả lời.\n- CHỦ ĐỀ AN TOÀN: Chỉ hỏi về size (sizing), vận chuyển (shipping time), chất liệu (material comfort), hướng dẫn giặt (washing), quà tặng (gift wrapping).\n- CẤM KỴ (NEGATIVE CONSTRAINT): TUYỆT ĐỐI KHÔNG hỏi/trả lời các câu liên quan đến \"Authentic\", \"Official Licensed\", \"Original Brand\". Tránh nhắc đến bản quyền thương hiệu gốc để đảm bảo an toàn tài khoản.\n\nOUTPUT FORMAT (JSON RAW ONLY):\nTrả về duy nhất 1 object JSON, không kèm lời dẫn:\n{\n  \"short_description\": \"Viết đoạn mô tả ngắn (Product Short Description) khoảng 64 từ. Tập trung vào 'Hook' để khách hàng muốn mua ngay. Không dùng HTML ở đây, chỉ text thường.\",\n  \"main_description_html\": \"Toàn bộ nội dung bài viết chi tiết (trên 600 từ) + FAQs theo định dạng HTML ở trên.\"\n}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -4272,
+        -2528
+      ],
+      "id": "ef4ccb1a-43b6-40de-98c7-1891863d0b00",
+      "name": "Tạo nội dung",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZbPcQI2SHz0NvP4Y",
+          "name": "Gemini"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Tạo tiền tố ngày tháng (VD: 20251203)\nconst prefix = new Date().toISOString().slice(0, 10).replace(/-/g, \"\");\n\n// Duyệt qua TẤT CẢ các items (ảnh) trong danh sách\n// Dùng vòng lặp for...of để xử lý từng item một\nlet index = 1; // Biến đếm để đánh số thứ tự ảnh nếu cần\n\nfor (const item of items) {\n  // Kiểm tra xem item có dữ liệu binary (ảnh) không cho chắc ăn\n  if (item.binary && item.binary.data) {\n    \n    const oldName = item.binary.data.fileName;\n    \n    // Đổi tên: NgàyTháng_TênCũ\n    // Ví dụ: 20251203_anh-san-pham.jpg\n    item.binary.data.fileName = `${prefix}_${oldName}`;\n    \n    // MẸO: Nếu muốn chắc chắn không trùng, bạn có thể thêm số thứ tự vào:\n    // item.binary.data.fileName = `${prefix}_${index}_${oldName}`;\n    \n    index++;\n  }\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4208,
+        -1648
+      ],
+      "id": "a23218e7-c3c0-4c86-a432-8d16346241c6",
+      "name": "Đặt tên cho ảnh"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -5056,
+        -1568
+      ],
+      "id": "abf89b2b-1ee5-4ea1-9809-ccb68acf7e98",
+      "name": "Loop Over Items7"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "searchMethod": "query",
+        "queryString": "='{{ $json.id }}' in parents and trashed = false",
+        "filter": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -4880,
+        -1552
+      ],
+      "id": "319e8ce9-eb94-47ac-806c-15f4ede711f9",
+      "name": "Search files and folders1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "rUlF8VcqJqVjB4ff",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -4480,
+        -1552
+      ],
+      "id": "ec2c879b-5731-47a3-9899-cf3f092e1dea",
+      "name": "Download file2",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "rUlF8VcqJqVjB4ff",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "keep": "lastItems"
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -4208,
+        -1488
+      ],
+      "id": "f820b422-c62c-4f22-9736-fcc969c0e203",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Lấy dữ liệu item đầu tiên\nconst item = items[0].json;\n\n// 1. TRÍCH XUẤT DỮ LIỆU CHÍNH XÁC (Dựa trên Debug của bạn)\n// Cấu trúc là: content -> parts[0] -> text\nlet rawText = \"\";\n\nif (item.content && item.content.parts && item.content.parts.length > 0) {\n    rawText = item.content.parts[0].text;\n} else {\n    // Dự phòng nếu cấu trúc thay đổi\n    rawText = item.text || item.output || \"\";\n}\n\n// 2. LÀM SẠCH CHUỖI (Xóa ký tự markdown ```json)\n// Vì rawText đang là chuỗi: \"```json\\n{...}\\n```\"\nconst cleanJson = rawText.replace(/```json|```/g, '').trim();\n\ntry {\n    // 3. CHUYỂN THÀNH OBJECT\n    const productInfo = JSON.parse(cleanJson);\n    \n    // 4. XỬ LÝ LOGIC SLUG (Theo yêu cầu < 92 ký tự)\n    let title = productInfo.ten_san_pham || \"Untitled Product\";\n    let slug = productInfo.slug || \"\";\n    \n    // Nếu AI quên slug, tự tạo từ từ khóa\n    if (!slug) {\n        const source = productInfo.tu_khoa_seo || title;\n        slug = source.toLowerCase().replace(/[^a-z0-9]+/g, '-');\n    }\n    \n    // Cắt slug cứng nếu dài hơn 91 ký tự\n    if (slug.length > 91) {\n        slug = slug.substring(0, 91);\n        slug = slug.replace(/-+$/, ''); // Xóa dấu gạch thừa ở đuôi\n    }\n    \n    return [{\n        json: {\n            ten_san_pham: title,\n            tu_khoa_seo: productInfo.tu_khoa_seo || \"pod product\",\n            slug: slug\n        }\n    }];\n\n} catch (error) {\n    // Nếu vẫn lỗi, in ra nguyên nhân để sửa\n    return [{\n        json: {\n            error: \"Lỗi Parse JSON\",\n            message: error.message,\n            raw_input_received: rawText\n        }\n    }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3856,
+        -1488
+      ],
+      "id": "afc23a96-623b-4615-9e81-b1067926961c",
+      "name": "Code in JavaScript18"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -3680,
+        -1568
+      ],
+      "id": "a6c4517f-82aa-44e6-b5cf-4996b97a9207",
+      "name": "Merge7"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -4896,
+        -1728
+      ],
+      "id": "8c5502aa-8d1b-4a6c-b762-dc16ed392799",
+      "name": "Limit3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Sắp xếp các item theo tên file giảm dần (3 -> 2 -> 1)\nitems.sort((a, b) => {\n  // Lấy tên file từ biến a và b.\n  // Hãy kiểm tra xem trường tên file của bạn là 'name' hay 'File Name'\n  // Thông thường output từ Google Drive List là 'name'\n  const nameA = a.json.name || a.json['File Name'] || '';\n  const nameB = b.json.name || b.json['File Name'] || '';\n\n  // Sử dụng localeCompare với tùy chọn numeric: true để so sánh số tự nhiên\n  // (ví dụ: để máy hiểu số 10 lớn hơn số 2, thay vì so sánh chuỗi thuần túy)\n  // b.localeCompare(a) sẽ trả về thứ tự GIẢM DẦN (Descending)\n  return nameB.localeCompare(nameA, undefined, { numeric: true, sensitivity: 'base' });\n});\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4672,
+        -1552
+      ],
+      "id": "bfdc8036-4581-402e-a1e1-2ad259a4c18c",
+      "name": "Code in JavaScript6"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-pro",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-pro"
+        },
+        "text": "You are an expert in SEO and E-commerce (POD).\nAnalyze this product image and extract information in STRICT JSON format.\n\nRULES:\n1. All content must be in ENGLISH.\n2. First, identify the \"tu_khoa_seo\" (Main Keyword). It must be the core product name (3-6 words).\n3. \"ten_san_pham\" MUST follow this exact formula: \"{tu_khoa_seo} - {Descriptive Suffix}\".\n   - The Suffix describes features, material, or theme.\n4. \"slug\" MUST be the kebab-case version of the \"tu_khoa_seo\" (and optionally 1 short category word).\n5. \"slug\" MUST be LESS THAN 86 characters.\n6. Do NOT abbreviate sports team names. Always use the Full Official Name (City + Mascot). Example: Use \"Chicago Bulls\", never just \"Bulls\" or \"Chicago\".\n\nJSON Structure:\n{\n  \"ten_san_pham\": \"Main Keyword - Detailed Suffix\",\n  \"tu_khoa_seo\": \"Main Keyword\",\n  \"slug\": \"main-keyword-category\"\n}\n\nEXAMPLE INPUT (Logic to follow):\n- Image: A whiskey decanter shaped like a basketball player for Lakers fans.\n- OUTPUT JSON:\n{\n  \"ten_san_pham\": \"Los Angeles Lakers Whiskey Bottle - NBA 3D Dunking Player Tribute Decanter\",\n  \"tu_khoa_seo\": \"Los Angeles Lakers Whiskey Bottle\",\n  \"slug\": \"los-angeles-lakers-whiskey-bottle-nba\"\n}",
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -4032,
+        -1488
+      ],
+      "id": "20e782c8-07ef-4e00-bcb0-e10dbfd99902",
+      "name": "Phân tích ảnh1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZbPcQI2SHz0NvP4Y",
+          "name": "Gemini"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1DedkgcgjD0YZuy7zRKxFShRsUrsGhhUk7GlDccVjVck",
+          "mode": "list",
+          "cachedResultName": "Pod",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DedkgcgjD0YZuy7zRKxFShRsUrsGhhUk7GlDccVjVck/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1108414039,
+          "mode": "list",
+          "cachedResultName": "League",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DedkgcgjD0YZuy7zRKxFShRsUrsGhhUk7GlDccVjVck/edit#gid=1108414039"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "trang_thai": "Pending",
+            "ten_san_pham": "={{ $json.ten_san_pham }}",
+            "anh_1": "={{ $json.anh_1 }}",
+            "anh_2": "={{ $json.anh_2 }}",
+            "anh_3": "={{ $json.anh_3 }}",
+            "tu_khoa_seo": "={{ $json.tu_khoa_seo }}",
+            "slug": "={{ $json.slug }}"
+          },
+          "matchingColumns": [
+            "slug"
+          ],
+          "schema": [
+            {
+              "id": "trang_thai",
+              "displayName": "trang_thai",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ten_san_pham",
+              "displayName": "ten_san_pham",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "anh_1",
+              "displayName": "anh_1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "anh_2",
+              "displayName": "anh_2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "anh_3",
+              "displayName": "anh_3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "gia_goc",
+              "displayName": "gia_goc",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "gia_sale",
+              "displayName": "gia_sale",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "tu_khoa_seo",
+              "displayName": "tu_khoa_seo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "slug",
+              "displayName": "slug",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tags",
+              "displayName": "tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "categories",
+              "displayName": "categories",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -3488,
+        -1520
+      ],
+      "id": "25414581-743c-4a23-8767-b0bdf0d1231b",
+      "name": "Sheet Raw League",
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6yUNJbZX45z2GUMs",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ================================================================\n// PHẦN 1: TÍNH TOÁN CATEGORY ID (TÍCH HỢP MỚI)\n// ================================================================\nconst item = items[0].json;\n\nconst categoryNode = $('Gom Categories');\nlet allCategories = [];\n\nif (categoryNode.first() && categoryNode.first().json.categories) {\n    allCategories = categoryNode.first().json.categories;\n} else {\n    allCategories = categoryNode.all().map(i => i.json);\n}\nlet calculatedId = 15; \n\nconst myCategoryName = item.categories;\n\nif (myCategoryName && Array.isArray(allCategories)) {\n    const foundCat = allCategories.find(cat => \n        cat.name && cat.name.toString().toLowerCase().trim() === myCategoryName.toString().toLowerCase().trim()\n    );\n    \n    if (foundCat) {\n        calculatedId = foundCat.id;\n    }\n}\n\nconst tagNode = $('Gom Tags'); \nlet allTags = [];\n\n// Truy cập vào biến 'tags' mà node Bước 2 đã gom\nif (tagNode.first() && tagNode.first().json.tags) {\n    allTags = tagNode.first().json.tags;\n}\n\nlet tagIds = []; \n\n// 1. Lấy chuỗi tag từ Sheet (Ví dụ: \"Lakers, NBA, Sport\")\n// Thay 'item.tags' bằng tên cột thực tế của bạn\nconst rawTagString = item.tags; \n\nif (rawTagString && allTags.length > 0) {\n    const tagNames = rawTagString.toString().split(',').map(t => t.trim());\n\n    // 3. Lặp qua từng tên tag để tìm ID\n    tagNames.forEach(tagName => {\n        const foundTag = allTags.find(t => \n            t.name.toLowerCase() === tagName.toLowerCase()\n        );\n        \n        if (foundTag) {\n            tagIds.push(foundTag.id);\n        } else {\n            // (Tùy chọn) Nếu không tìm thấy tag nào thì log ra để biết\n            // console.log(`Không tìm thấy tag: ${tagName}`);\n        }\n    });\n}\n\n// ================================================================\n// PHẦN 2: XỬ LÝ ẢNH VÀ NỘI DUNG (CODE CŨ CỦA BẠN)\n// ================================================================\n\n// Lấy nội dung bài viết từ AI\nlet content = item.main_description_html || \"\"; // Thêm || \"\" để tránh lỗi nếu null\n\n// Lấy link ảnh từ Sheet\nconst linkImg1 = item.anh_1; \nconst linkImg2 = item.anh_2;\nconst altText = item.ten_san_pham; \n\n// Tạo mã HTML cho ảnh\nconst htmlImg1 = `<figure style=\"text-align:center; margin: 25px 0;\">\n                    <img src=\"${linkImg1}\" alt=\"${altText} - Front View\" style=\"max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);\">\n                    <figcaption style=\"font-style: italic; color: #555; margin-top: 5px;\">${altText}</figcaption>\n                 </figure>`;\n\nconst htmlImg2 = `<figure style=\"text-align:center; margin: 25px 0;\">\n                    <img src=\"${linkImg2}\" alt=\"${altText} - Detail View\" style=\"max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);\">\n                 </figure>`;\n\n// THỰC HIỆN THAY THẾ\n// 1. Ảnh 1\nif (content.includes('[IMG_1]') && linkImg1) {\n    content = content.replace('[IMG_1]', htmlImg1);\n} else if (linkImg1) {\n    content = content.replace('</p>', '</p>' + htmlImg1);\n}\n\n// 2. Ảnh 2\nif (content.includes('[IMG_2]') && linkImg2) {\n    content = content.replace('[IMG_2]', htmlImg2);\n} else if (linkImg2) {\n    content += htmlImg2;\n}\n\n// Cập nhật lại nội dung\nitem.main_description_html = content;\n\n// TẠO GALLERY CHO WOOCOMMERCE\nconst images = [];\nfunction addImage(url) {\n  if (url && url.toString().startsWith('http')) {\n    images.push({ src: url.toString().trim(), alt: altText });\n  }\n}\naddImage(item.anh_1);\naddImage(item.anh_2);\naddImage(item.anh_3);\naddImage(item.anh_4);\n\n// ================================================================\n// PHẦN 3: TRẢ VỀ KẾT QUẢ TỔNG HỢP\n// ================================================================\n\nreturn [{\n  json: {\n    ...item,\n    woo_images: images,\n    calculated_category_id: calculatedId,\n    calculated_tag_ids: tagIds\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2880,
+        -2224
+      ],
+      "id": "7ced225d-43b1-425e-bc82-f9e94f1feb0b",
+      "name": "Code Có biến tag"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -4480,
+        -1952
+      ],
+      "id": "ae2a9e59-d490-4a05-8d6e-faae19682692",
+      "name": "Loop Over Items6"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Lấy nội dung text gốc từ Gemini\nconst rawText = items[0].json.content.parts[0].text;\n\ntry {\n  // 1. Tìm vị trí dấu ngoặc nhọn mở '{' đầu tiên và đóng '}' cuối cùng\n  const firstOpen = rawText.indexOf('{');\n  const lastClose = rawText.lastIndexOf('}');\n\n  if (firstOpen === -1 || lastClose === -1) {\n    throw new Error(\"Không tìm thấy dấu ngoặc JSON {} trong phản hồi của AI\");\n  }\n\n  // 2. Cắt lấy đúng đoạn JSON, bỏ qua lời dẫn chuyện thừa thãi\n  let cleanJson = rawText.substring(firstOpen, lastClose + 1);\n\n  // 3. (Mẹo nâng cao) Sửa lỗi dòng mới nếu AI lỡ xuống dòng trong chuỗi\n  // cleanJson = cleanJson.replace(/\\n/g, \"\\\\n\"); // Chỉ bật dòng này nếu vẫn lỗi\n\n  // 4. Parse JSON\n  const data = JSON.parse(cleanJson);\n\n  return [ { json: data } ];\n\n} catch (error) {\n  // Nếu lỗi, trả về nguyên văn text để Debug xem sai ở đâu\n  return [\n    {\n      json: {\n        error: error.message,\n        raw_content_to_debug: rawText // Xem cái này ở cột Output để biết AI viết sai chỗ nào\n      }\n    }\n  ];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4000,
+        -1888
+      ],
+      "id": "ff31f169-4240-4bbd-8522-13db643a7348",
+      "name": "Code in JavaScript14"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -3840,
+        -1952
+      ],
+      "id": "669279c3-333e-4f1b-81f2-61b3d4ed257c",
+      "name": "Merge6"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst item = items[0].json;\n\n// Lấy nội dung bài viết từ AI\nlet content = item.main_description_html || \"\"; // Thêm || \"\" để tránh lỗi nếu null\n\n// Lấy link ảnh từ Sheet\nconst linkImg1 = item.anh_1; \nconst linkImg2 = item.anh_2;\nconst altText = item.ten_san_pham; \n\n// Tạo mã HTML cho ảnh\nconst htmlImg1 = `<figure style=\"text-align:center; margin: 25px 0;\">\n                    <img src=\"${linkImg1}\" alt=\"${altText} - Front View\" style=\"max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);\">\n                    <figcaption style=\"font-style: italic; color: #555; margin-top: 5px;\">${altText}</figcaption>\n                 </figure>`;\n\nconst htmlImg2 = `<figure style=\"text-align:center; margin: 25px 0;\">\n                    <img src=\"${linkImg2}\" alt=\"${altText} - Detail View\" style=\"max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);\">\n                 </figure>`;\n\n// THỰC HIỆN THAY THẾ\n// 1. Ảnh 1\nif (content.includes('[IMG_1]') && linkImg1) {\n    content = content.replace('[IMG_1]', htmlImg1);\n} else if (linkImg1) {\n    content = content.replace('</p>', '</p>' + htmlImg1);\n}\n\n// 2. Ảnh 2\nif (content.includes('[IMG_2]') && linkImg2) {\n    content = content.replace('[IMG_2]', htmlImg2);\n} else if (linkImg2) {\n    content += htmlImg2;\n}\n\n// Cập nhật lại nội dung\nitem.main_description_html = content;\n\n// TẠO GALLERY CHO WOOCOMMERCE\nconst images = [];\nfunction addImage(url) {\n  if (url && url.toString().startsWith('http')) {\n    images.push({ src: url.toString().trim(), alt: altText });\n  }\n}\naddImage(item.anh_1);\naddImage(item.anh_2);\naddImage(item.anh_3);\naddImage(item.anh_4);\n\n// ================================================================\n// PHẦN 3: TRẢ VỀ KẾT QUẢ TỔNG HỢP\n// ================================================================\n\nreturn [{\n  json: {\n    ...item,\n    woo_images: images\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3680,
+        -1952
+      ],
+      "id": "a87e7686-81e1-48b7-ba7f-8d8d79195721",
+      "name": "Code in JavaScript15"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Bạn là một chuyên gia SEO Copywriter E-commerce (Native English Speaker).\nNhiệm vụ của bạn là viết nội dung sản phẩm chuyên sâu dựa trên thông tin sau:\n\nINPUT DATA:\n- Product Name: {{ $json.ten_san_pham }}\n- Focus Keyword: {{ $json.tu_khoa_seo }}\n\nYÊU CẦU NGHIÊM NGẶT VỀ NỘI DUNG (STRICT GUIDELINES):\n1. Ngôn ngữ: Tiếng Anh chuẩn (US English), văn phong bán hàng chuyên nghiệp, thuyết phục.\n2. Độ dài: BẮT BUỘC trên 500 từ (Không tính phần HTML tags).\n3. Định dạng: HTML chuẩn (sử dụng <h2>, <h3>, <p>, <ul>, <li>). Không dùng thẻ <h1>. Không dùng Markdown (```).\n4. Mật độ từ khóa: Duy trì \"Focus Keyword\" ở mức 1.2% - 1.5%. Phải xuất hiện tự nhiên ở đoạn mở đầu, ít nhất 1 thẻ H2, và rải rác trong bài.\n5. NO ICONS/EMOJIS: Tuyệt đối không sử dụng icon (🚀, 🌟,...) trong bài viết.\n6. Nội dung duy nhất: Tập trung sâu vào mô tả sản phẩm (chất liệu, cảm giác mặc, dịp sử dụng, hướng dẫn bảo quản). Không viết chung chung.\n\nYÊU CẦU VỀ BỐ CỤC HÌNH ẢNH:\nTrong phần nội dung chi tiết (main_description_html), bạn hãy chèn 2 ký hiệu giữ chỗ (placeholder) sau:\n1. \"[IMG_1]\" : Đặt ngay sau đoạn mở đầu (Introduction) hoặc sau thẻ H2 đầu tiên.\n2. \"[IMG_2]\" : Đặt ở gần cuối bài viết, trước phần kết luận hoặc FAQs.\n\nLưu ý: Chỉ viết đúng ký tự \"[IMG_1]\" và \"[IMG_2]\", không tự bịa ra thẻ hình ảnh html.\n\nYÊU CẦU VỀ TRÌNH BÀY & KHẢ NĂNG ĐỌC (READABILITY):\n1. QUY TẮC \"3 DÒNG\": Tuyệt đối KHÔNG viết đoạn văn dài lê thê (Wall of text). Mỗi đoạn văn (paragraph) chỉ được chứa tối đa 3 câu ngắn. Sau 2-3 câu bắt buộc phải đóng thẻ </p> và mở thẻ <p> mới.\n2. FORMATTING:\n   - Sử dụng danh sách liệt kê (<ul><li>) bất cứ khi nào có thể (thay vì viết câu liệt kê dài dòng).\n   - In đậm (<strong>) các từ khóa quan trọng hoặc lợi ích chính để làm điểm nhấn.\n3. TONE GIỌNG: Viết gãy gọn, súc tích, ngắt nghỉ rõ ràng để khách hàng lướt nhanh trên điện thoại vẫn nắm được ý.\n\nCẤU TRÚC BÀI VIẾT (HTML Output):\n- Phần 1: Introduction (Gây ấn tượng mạnh, chứa từ khóa).\n- Phần 2: Key Features (Dùng <ul>, mô tả chi tiết lợi ích).\n- Phần 3: Why You Need This (Đánh vào cảm xúc, nhu cầu quà tặng/lễ hội).\n- Phần 4: Material & Care Instructions (Chi tiết kỹ thuật).\n- Phần 5: FAQs (Phần này rất quan trọng - xem yêu cầu bên dưới).\n\nYÊU CẦU VỀ FAQs (5 Câu hỏi):\n- Viết đúng 5 câu hỏi và câu trả lời.\n- CHỦ ĐỀ AN TOÀN: Chỉ hỏi về size (sizing), vận chuyển (shipping time), chất liệu (material comfort), hướng dẫn giặt (washing), quà tặng (gift wrapping).\n- CẤM KỴ (NEGATIVE CONSTRAINT): TUYỆT ĐỐI KHÔNG hỏi/trả lời các câu liên quan đến \"Authentic\", \"Official Licensed\", \"Original Brand\". Tránh nhắc đến bản quyền thương hiệu gốc để đảm bảo an toàn tài khoản.\n\nOUTPUT FORMAT (JSON RAW ONLY):\nTrả về duy nhất 1 object JSON, không kèm lời dẫn:\n{\n  \"short_description\": \"Viết đoạn mô tả ngắn (Product Short Description) khoảng 64 từ. Tập trung vào 'Hook' để khách hàng muốn mua ngay. Không dùng HTML ở đây, chỉ text thường.\",\n  \"main_description_html\": \"Toàn bộ nội dung bài viết chi tiết (trên 600 từ) + FAQs theo định dạng HTML ở trên.\"\n}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -4288,
+        -1888
+      ],
+      "id": "401f90c9-6159-4dcd-9574-8e2cc00c44f7",
+      "name": "Tạo nội dung1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZbPcQI2SHz0NvP4Y",
+          "name": "Gemini"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "product",
+        "operation": "create",
+        "name": "={{ $json.ten_san_pham }}",
+        "additionalFields": {
+          "description": "={{ $json.main_description_html }}\n\n<br><hr><br>\n<div style=\"text-align: center;\">\n  <p><strong>Official Authentic Product</strong></p>\n  <a href=\"https://leaguelockergear.com/\" target=\"_blank\" rel=\"nofollow\">\n     <img src=\"https://leaguelockergear.com/wp-content/uploads/2025/10/cropped-logo-remove-small.png\" width=\"200\" alt=\"LeagueLockerGear\">\n  </a>\n</div>",
+          "regularPrice": "={{ $json.gia_goc }}",
+          "salePrice": "={{ $json.gia_sale }}",
+          "shortDescription": "={{ $json.short_description }}",
+          "slug": "={{ $json.slug }}"
+        },
+        "dimensionsUi": {},
+        "imagesUi": {
+          "imagesValues": [
+            {
+              "alt": "={{ $json.woo_images[0].alt }}",
+              "src": "={{ $json.woo_images[0].src }}",
+              "name": ""
+            },
+            {
+              "alt": "={{ $json.woo_images[1].alt }}",
+              "src": "={{ $json.woo_images[1].src }}",
+              "name": ""
+            },
+            {
+              "alt": "={{ $json.woo_images[2].alt }}",
+              "src": "={{ $json.woo_images[2].src }}",
+              "name": ""
+            }
+          ]
+        },
+        "metadataUi": {
+          "metadataValues": [
+            {
+              "key": "rank_math_focus_keyword",
+              "value": "={{ $json.tu_khoa_seo }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.wooCommerce",
+      "typeVersion": 1,
+      "position": [
+        -3504,
+        -1952
+      ],
+      "id": "de8b539e-1f1f-4649-b5c9-92b440b12ed4",
+      "name": "League",
+      "credentials": {
+        "wooCommerceApi": {
+          "id": "Gfs8SSLfTHpMr9bP",
+          "name": "League Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1DedkgcgjD0YZuy7zRKxFShRsUrsGhhUk7GlDccVjVck",
+          "mode": "list",
+          "cachedResultName": "Pod",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DedkgcgjD0YZuy7zRKxFShRsUrsGhhUk7GlDccVjVck/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1108414039,
+          "mode": "list",
+          "cachedResultName": "League",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DedkgcgjD0YZuy7zRKxFShRsUrsGhhUk7GlDccVjVck/edit#gid=1108414039"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "trang_thai",
+              "lookupValue": "Pending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -4688,
+        -1952
+      ],
+      "id": "92744901-b7ce-4eec-b68a-f445b15aac96",
+      "name": "Sheet League(Input)",
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6yUNJbZX45z2GUMs",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Sheet League(Input)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hoop": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lọc Categories cho Hoop": {
+      "main": [
+        [
+          {
+            "node": "Gom Categories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gom Categories": {
+      "main": [
+        [
+          {
+            "node": "Lọc Tags cho Hoop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lọc Tags cho Hoop": {
+      "main": [
+        [
+          {
+            "node": "Gom Tags",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gom Tags": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript8": {
+      "main": [
+        [
+          {
+            "node": "Merge7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search (LEAGUE)": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search (HOOP)": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP POST HOOP": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript9": {
+      "main": [
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items4": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Tạo nội dung",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript10": {
+      "main": [
+        [
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge4": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript11": {
+      "main": [
+        [
+          {
+            "node": "Hoop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items5": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Search files and folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file1": {
+      "main": [
+        [
+          {
+            "node": "Limit1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code in JavaScript12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript12": {
+      "main": [
+        [
+          {
+            "node": "HTTP POST HOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit1": {
+      "main": [
+        [
+          {
+            "node": "Phân tích ảnh",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript13": {
+      "main": [
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge5": {
+      "main": [
+        [
+          {
+            "node": "Sheet Hoop(Raw output, need improve)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create product (HOOP)": {
+      "main": [
+        []
+      ]
+    },
+    "Sheet Hoop(Input)": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet Hoop(Raw output, need improve)": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit2": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Download file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Phân tích ảnh": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tạo nội dung": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Đặt tên cho ảnh": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Phân tích hình ảnh1": {
+      "main": [
+        [
+          {
+            "node": "Tạo 2 ảnh liên quan tới sản phẩm",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items7": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Search files and folders1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file2": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Đặt tên cho ảnh",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Phân tích ảnh1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript18": {
+      "main": [
+        [
+          {
+            "node": "Merge7",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge7": {
+      "main": [
+        [
+          {
+            "node": "Sheet Raw League",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit3": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript6": {
+      "main": [
+        [
+          {
+            "node": "Download file2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Phân tích ảnh1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript18",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet Raw League": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Có biến tag": {
+      "main": [
+        []
+      ]
+    },
+    "Loop Over Items6": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Merge6",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Tạo nội dung1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript14": {
+      "main": [
+        [
+          {
+            "node": "Merge6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge6": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript15",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript15": {
+      "main": [
+        [
+          {
+            "node": "League",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tạo nội dung1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript14",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "League": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet League(Input)": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a33f14be-778e-4e48-8b6c-98c59e5ac95a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d800b4ad3f2d1d422d71b70ea8819130b67c715e52d01c3bf3036f858c4ff588"
+  },
+  "id": "sair1Tv4luQ4V4a5",
+  "tags": []
+}
